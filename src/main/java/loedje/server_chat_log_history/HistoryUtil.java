@@ -144,12 +144,12 @@ public class HistoryUtil {
 	private static void sendMessage(ServerPlayerEntity player, String message) {
 		if (!inList(message, blacklist) && message.contains(SERVER_INFO)) {
 			if (message.contains("[Server thread/INFO]: <")
-					|| message.contains("[Server thread/INFO] [Not Secure] <")) { // need to test this
+					|| message.contains("[Server thread/INFO] [Not Secure]: <")) { // need to test this
 				// Normal message
 				player.sendMessageToClient(Text.literal(message.substring(message.indexOf('<'))),
 						false);
-			} else if (message.contains("[Server thread/INFO] * ")
-					|| message.contains("[Server thread/INFO] [Not Secure] * ")) {
+			} else if (message.contains("[Server thread/INFO]: * ")
+					|| message.contains("[Server thread/INFO] [Not Secure]: * ")) {
 				// Message from /me command
 				player.sendMessageToClient(Text.literal(message.substring(message.indexOf('*'))),
 						false);
