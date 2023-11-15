@@ -160,9 +160,14 @@ public class HistoryUtil {
 				player.sendMessageToClient(Text.literal(
 								message.substring(message.indexOf(": ") + 2))
 						.formatted(Formatting.YELLOW), false);
-			} else if (message.contains(" has completed the challenge ")
-					|| message.contains(" has made the advancement ")) {
+			} else if (message.contains(" has completed the challenge ")) {
 				// Advancements and challenges
+				message = message.substring(message.indexOf(": ") + 2);
+				String[] split = message.split("\\[");
+				player.sendMessageToClient(Text.literal(split[split.length - 2])
+						.append(Text.literal("[" + split[split.length - 1])
+								.formatted(Formatting.DARK_PURPLE)), false);
+			} else if (message.contains(" has made the advancement ")) {
 				message = message.substring(message.indexOf(": ") + 2);
 				String[] split = message.split("\\[");
 				player.sendMessageToClient(Text.literal(split[split.length - 2])
