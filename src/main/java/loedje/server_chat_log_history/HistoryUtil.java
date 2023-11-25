@@ -14,8 +14,12 @@ import java.util.zip.GZIPInputStream;
 /**
  * Utility class for handling player message log history in a Minecraft server.
  * Very likely not perfect.
+ * TODO:	blacklist and whitelist should be applied before adding to deque. Formatting should
+ * 			still be applied afterwards
  */
 public class HistoryUtil {
+
+	public static int maxMessages = 100;
 
 	private static final String[] whitelist = {
 			" was ", // saves me time but might cause problems?
@@ -39,7 +43,8 @@ public class HistoryUtil {
 	private static final String[] blacklist = {
 			", message:",
 			"lost connection: ",
-			"Exception"
+			"Exception",
+			"<--[HERE]" // invalid command
 	};
 	public static final String SERVER_INFO = "[Server thread/INFO]";
 
@@ -124,6 +129,7 @@ public class HistoryUtil {
 	}
 	/**
 	 * Prints the player's history messages to the player's client.
+	 * If maxMessages is >= 0 it only prints that amount of most recent message history.
 	 *
 	 * @param player  The player whose history is being printed.
 	 * @param history The deque containing the player's history messages.
@@ -131,6 +137,14 @@ public class HistoryUtil {
 	private static void printHistory(ServerPlayerEntity player, Deque<String> history) {
 		player.sendMessageToClient(Text.literal("No more logged messages")
 				.formatted(Formatting.GRAY, Formatting.ITALIC), false);
+		if (maxMessages >= 0) {
+			Deque<String> historyLimited = new ArrayDeque<>();
+			for (int i = 0; i < maxMessages; i++) {
+				historyLimited.push(history.removeFirst());
+				if (history.isEmpty()) break;
+			}
+			history = historyLimited;
+		}
 		while (!history.isEmpty()) {
 			String message = history.removeLast();
 			sendMessage(player, message);
