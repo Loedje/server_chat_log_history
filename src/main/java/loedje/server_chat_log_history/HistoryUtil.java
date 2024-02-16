@@ -86,7 +86,8 @@ public class HistoryUtil {
 	 * @param player The player who joined.
 	 */
 	private static void handlePlayerJoin(ServerWorld world, ServerPlayerEntity player) {
-		if (!player.hasPermissionLevel(2)) return;
+		if (!player.hasPermissionLevel(2) && ServerChatLogHistory.getConfig().isOperatorRequired())
+			return;
 
 		Deque<String> history = previousHistory.clone();
 

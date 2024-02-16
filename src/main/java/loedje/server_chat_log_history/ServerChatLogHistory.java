@@ -25,4 +25,6 @@ public class ServerChatLogHistory implements ModInitializer {
 	public static void setConfig(Config config) {
 		ServerChatLogHistory.config = config;
 	}
+
+
 }
