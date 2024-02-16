@@ -9,7 +9,7 @@ import java.lang.reflect.Modifier;
 
 public class Config {
 	public static final File FILE = FabricLoader.getInstance().getConfigDir().resolve("server_chat_log_history.json").toFile();
-	private int maxMessages = 0;
+	private int maxMessages = -1;
 
 	public int getMaxMessages() {
 		return maxMessages;

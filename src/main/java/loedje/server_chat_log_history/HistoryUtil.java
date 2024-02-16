@@ -15,13 +15,11 @@ import java.util.zip.GZIPInputStream;
 /**
  * Utility class for handling player message log history in a Minecraft server.
  * Very likely not perfect.
- * TODO:	blacklist and whitelist should be applied before adding to deque. Formatting should
- * 			still be applied afterwards
  */
 public class HistoryUtil {
 	private static final ArrayDeque<String> previousHistory = new ArrayDeque<>();
 
-	private static final String[] whitelist = {
+	private static final String[] death_message_list = {
 			" was ", // saves me time but might cause problems?
 			" drowned",
 			" died",
@@ -129,7 +127,10 @@ public class HistoryUtil {
 		String line;
 		while ((line = br.readLine()) != null) {
 			line = line.replace(" (Minecraft) ",": ");
-			history.push(line);
+			if (!inList(line, blacklist) && line.contains(SERVER_INFO)) {
+				history.push(line);
+			}
+
 		}
 	}
 	/**
@@ -162,20 +163,18 @@ public class HistoryUtil {
 	 * @param message message to be checked for conditions
 	 */
 	private static void sendMessage(ServerPlayerEntity player, String message) {
-		if (!inList(message, blacklist) && message.contains(SERVER_INFO)) {
-			if (message.contains("[Server thread/INFO]: <")
-					|| message.contains("[Server thread/INFO] [Not Secure]: <")) { // need to test this
-				// Normal message
-				player.sendMessageToClient(Text.literal(message.substring(message.indexOf('<'))),
-						false);
-			} else if (message.contains("[Server thread/INFO]: * ")
-					|| message.contains("[Server thread/INFO] [Not Secure]: * ")) {
-				// Message from /me command
-				player.sendMessageToClient(Text.literal(message.substring(message.indexOf('*'))),
-						false);
-			} else {
-				sendAnnouncementMessage(player, message);
-			}
+		if (message.contains("[Server thread/INFO]: <")
+				|| message.contains("[Server thread/INFO] [Not Secure]: <")) { // need to test this
+			// Normal message
+			player.sendMessageToClient(Text.literal(message.substring(message.indexOf('<'))),
+					false);
+		} else if (message.contains("[Server thread/INFO]: * ")
+				|| message.contains("[Server thread/INFO] [Not Secure]: * ")) {
+			// Message from /me command
+			player.sendMessageToClient(Text.literal(message.substring(message.indexOf('*'))),
+					false);
+		} else {
+			sendAnnouncementMessage(player, message);
 		}
 	}
 
@@ -204,7 +203,7 @@ public class HistoryUtil {
 			player.sendMessageToClient(Text.literal(split[split.length - 2])
 					.append(Text.literal("[" + split[split.length - 1])
 							.formatted(Formatting.GREEN)), false);
-		} else if (inList(message, whitelist)
+		} else if (inList(message, death_message_list)
 				&& !message.contains(", message: ")) {
 			// Death messages
 			player.sendMessageToClient(Text.literal(message),
