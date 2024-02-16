@@ -21,8 +21,6 @@ import java.util.zip.GZIPInputStream;
 public class HistoryUtil {
 	private static final ArrayDeque<String> previousHistory = new ArrayDeque<>();
 
-	public static final int MAX_MESSAGES = 1000;
-
 	private static final String[] whitelist = {
 			" was ", // saves me time but might cause problems?
 			" drowned",
@@ -144,9 +142,10 @@ public class HistoryUtil {
 	private static void printHistory(ServerPlayerEntity player, Deque<String> history) {
 		player.sendMessageToClient(Text.literal("No more logged messages")
 				.formatted(Formatting.GRAY, Formatting.ITALIC), false);
-		if (MAX_MESSAGES >= 0) {
+		int maxMessages = ServerChatLogHistory.getConfig().getMaxMessages();
+		if (maxMessages >= 0) {
 			Deque<String> historyLimited = new ArrayDeque<>();
-			for (int i = 0; i < MAX_MESSAGES; i++) {
+			for (int i = 0; i < maxMessages; i++) {
 				historyLimited.push(history.removeFirst());
 				if (history.isEmpty()) break;
 			}
