@@ -142,13 +142,13 @@ public class HistoryUtil {
 	 * @param history The deque containing the player's history messages.
 	 */
 	private static void printHistory(ServerPlayerEntity player, Deque<String> history) {
-		player.sendMessageToClient(Text.literal("No more logged messages")
+		player.sendMessageToClient(Text.literal("End of this server's messages.")
 				.formatted(Formatting.GRAY, Formatting.ITALIC), false);
 		int maxMessages = ServerChatLogHistory.getConfig().getMaxMessages();
-		if (maxMessages >= 0) {
+		if (maxMessages > 0) {
 			Deque<String> historyLimited = new ArrayDeque<>();
 			for (int i = 0; i < maxMessages; i++) {
-				historyLimited.push(history.removeFirst());
+				historyLimited.addLast(history.removeFirst());
 				if (history.isEmpty()) break;
 			}
 			history = historyLimited;
