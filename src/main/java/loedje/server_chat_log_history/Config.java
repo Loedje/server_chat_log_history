@@ -11,6 +11,7 @@ public class Config {
 	public static final File FILE = FabricLoader.getInstance().getConfigDir().resolve("server_chat_log_history.json").toFile();
 	private int maxMessages = 1000;
 	private boolean operatorRequired = true;
+	private String logFolder = "logs";
 
 	public int getMaxMessages() {
 		return maxMessages;
@@ -18,6 +19,10 @@ public class Config {
 
 	public boolean isOperatorRequired() {
 		return operatorRequired;
+	}
+
+	public String getLogFolder() {
+		return logFolder;
 	}
 
 	public void init() {

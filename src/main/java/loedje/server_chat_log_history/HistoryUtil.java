@@ -57,7 +57,8 @@ public class HistoryUtil {
 	 * time these logs are needed.
 	 */
 	public static void setPreviousHistory() {
-		File logs = new File(FabricLoader.getInstance().getGameDir().toFile(), "logs");
+		File logs = new File(FabricLoader.getInstance().getGameDir().toFile(),
+				ServerChatLogHistory.getConfig().getLogFolder());
 
 		File[] files = logs.listFiles((dir, name) -> name.toLowerCase().endsWith(".gz")
 				&& !name.startsWith("debug"));
@@ -91,7 +92,9 @@ public class HistoryUtil {
 
 		Deque<String> history = previousHistory.clone();
 
-		File latest = new File(world.getServer().getRunDirectory(), "logs/latest.log");
+		File logsFolder = new File(world.getServer().getRunDirectory(),
+				ServerChatLogHistory.getConfig().getLogFolder());
+		File latest = new File(logsFolder, "latest.log");
 		try (BufferedReader br = new BufferedReader(new FileReader(latest))){
 			readLines(history, br);
 		} catch (IOException e) {
