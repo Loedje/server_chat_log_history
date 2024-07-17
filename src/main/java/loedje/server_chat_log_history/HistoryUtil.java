@@ -7,7 +7,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
@@ -94,7 +93,6 @@ public class HistoryUtil {
 		Deque<String> history = previousHistory.clone();
 
 		File logsFolder = world.getServer().getPath(ServerChatLogHistory.getConfig().getLogFolder()).toFile();
-		System.out.println(logsFolder.getPath());
 		File latest = new File(logsFolder, "latest.log");
 		try (BufferedReader br = new BufferedReader(new FileReader(latest))){
 			readLines(history, br);
