@@ -1,6 +1,8 @@
 package loedje.server_chat_log_history;
 
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.message.MessageType;
+import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -18,6 +20,7 @@ import java.util.zip.GZIPInputStream;
  */
 public class HistoryUtil {
 	private static final ArrayDeque<String> previousHistory = new ArrayDeque<>();
+	private static final ArrayDeque<Text> latestHistory = new ArrayDeque<>();
 
 	private static final String[] death_message_list = {
 			" was ", // saves me time but might cause problems?
@@ -53,6 +56,22 @@ public class HistoryUtil {
 	private static final Set<ServerPlayerEntity> players = new HashSet<>();
 
 	/**
+	 * Death messages, join/leave messages, and advancement messages from current session
+	 * @param message message to be saved
+	 */
+	public static void handleGameMessage(Text message) {
+		latestHistory.push(message);
+	}
+
+	/**
+	 * Chat messages from player or command messages like /me and /say, from the current session
+	 * @param message message to be saved
+	 * @param params message type
+	 */
+	public static void handleChatMessage(SignedMessage message, MessageType.Parameters params) {
+		latestHistory.push(params.applyChatDecoration(message.getContent()));
+	}
+	/**
 	 * Saves the chat log history stored in gz files. previousHistory can be cloned and used every
 	 * time these logs are needed.
 	 */
@@ -77,28 +96,19 @@ public class HistoryUtil {
 	 */
 	public static void tick(ServerWorld world) {
 		world.getPlayers().stream().filter(
-				p -> !players.contains(p)).findAny().ifPresent(player -> handlePlayerJoin(world, player));
+				p -> !players.contains(p)).findAny().ifPresent(HistoryUtil::handlePlayerJoin);
 		players.addAll(world.getPlayers());
 	}
 	/**
 	 * Retrieves and prints the player's history upon joining the server, if they are operator.
 	 *
-	 * @param world  The server world.
 	 * @param player The player who joined.
 	 */
-	private static void handlePlayerJoin(ServerWorld world, ServerPlayerEntity player) {
+	private static void handlePlayerJoin(ServerPlayerEntity player) {
 		if (!player.hasPermissionLevel(2) && ServerChatLogHistory.getConfig().isOperatorRequired())
 			return;
 
 		Deque<String> history = previousHistory.clone();
-
-		File logsFolder = world.getServer().getPath(ServerChatLogHistory.getConfig().getLogFolder()).toFile();
-		File latest = new File(logsFolder, "latest.log");
-		try (BufferedReader br = new BufferedReader(new FileReader(latest))){
-			readLines(history, br);
-		} catch (IOException e) {
-			ServerChatLogHistory.LOGGER.error("Error reading file: " + e.getMessage(), e);
-		}
 
 		printHistory(player, history);
 	}
@@ -113,7 +123,7 @@ public class HistoryUtil {
 			 GZIPInputStream gzipInputStream = new GZIPInputStream(fileInputStream);
 			 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(gzipInputStream))) {
 
-			readLines(HistoryUtil.previousHistory, bufferedReader);
+			readLines(bufferedReader);
 		} catch (IOException e) {
 			ServerChatLogHistory.LOGGER.error("Error reading file: " + e.getMessage(), e);
 		}
@@ -122,16 +132,16 @@ public class HistoryUtil {
 	/**
 	 * Read all lines in file and add to stack.
 	 * Change lines containing (Minecraft)
-	 * @param history The deque containing the player's history messages
+	 *
 	 * @param br BufferedReader
 	 * @throws IOException when line can not be read.
 	 */
-	private static void readLines(Deque<String> history, BufferedReader br) throws IOException {
+	private static void readLines(BufferedReader br) throws IOException {
 		String line;
 		while ((line = br.readLine()) != null) {
 			line = line.replace(" (Minecraft) ",": ");
 			if (!inList(line, blacklist) && line.contains(SERVER_INFO)) {
-				history.push(line);
+				((Deque<String>) HistoryUtil.previousHistory).push(line);
 			}
 
 		}
@@ -158,6 +168,10 @@ public class HistoryUtil {
 		while (!history.isEmpty()) {
 			String message = history.removeLast();
 			sendMessage(player, message);
+		}
+
+		while (!latestHistory.isEmpty()) {
+			player.sendMessageToClient(latestHistory.removeLast(), false);
 		}
 	}
 	/**
