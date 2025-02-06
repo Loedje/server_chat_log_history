@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "server_chat_log_history",
-	"version": "1.11",
+	"version": "1.10+1.21.1",
 	"name": "Server Chat Log History",
 	"description": "Sends all previous chat messages of the server when you join",
 	"authors": [
@@ -17,6 +17,6 @@
 	},
 	"depends": {
 		"fabricloader": ">=0.16.10",
-		"minecraft": "~1.21.0"
+		"minecraft": ">=1.21.0 <1.21.4"
 	}
 }
